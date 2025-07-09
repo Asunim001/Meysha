@@ -2,97 +2,51 @@
 <html lang="id">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Kasir Apotek Profesional</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Dashboard Kasir Apotek</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-</head>
-<body class="bg-light">
-  <div class="container py-4">
-    <h2 class="text-center mb-4">🧾 Kasir Apotek Profesional</h2>
-    
-    <div class="card p-4 shadow-sm">
-      <h5>Input Transaksi</h5>
-      <form id="formTransaksi">
-        <div class="mb-3">
-          <label for="nama_obat" class="form-label">Nama Obat</label>
-          <input type="text" class="form-control" id="nama_obat" required>
-        </div>
-        <div class="mb-3">
-          <label for="jumlah" class="form-label">Jumlah</label>
-          <input type="number" class="form-control" id="jumlah" required>
-        </div>
-        <div class="mb-3">
-          <label for="harga" class="form-label">Harga Satuan</label>
-          <input type="number" class="form-control" id="harga" required>
-        </div>
-        <button type="submit" class="btn btn-success w-100">Simpan Transaksi</button>
-      </form>
-    </div>
-
-    <div class="mt-5">
-      <h5>Riwayat Transaksi</h5>
-      <table class="table table-bordered table-striped mt-3" id="tabelTransaksi">
-        <thead class="table-dark">
-          <tr>
-            <th>No</th>
-            <th>Tanggal</th>
-            <th>Nama Obat</th>
-            <th>Jumlah</th>
-            <th>Harga Satuan</th>
-            <th>Total Harga</th>
-          </tr>
-        </thead>
-        <tbody></tbody>
-      </table>
-    </div>
-  </div>
-
-  <script>
-    const scriptURL = 'https://script.google.com/macros/s/AKfycbxGVOKCFRwLTywa4U5BqJgx5-qGoChLfnWHt3MlSUMKPL3CKNDx5ozMa92QPEsHfdZo/exec'; // Ganti dengan URL Web App kamu
-
-    document.getElementById('formTransaksi').addEventListener('submit', function(e) {
-      e.preventDefault();
-      const nama_obat = document.getElementById('nama_obat').value;
-      const jumlah = parseInt(document.getElementById('jumlah').value);
-      const harga = parseInt(document.getElementById('harga').value);
-
-      fetch(scriptURL, {
-        method: 'POST',
-        body: JSON.stringify({ nama_obat, jumlah, harga })
-      })
-      .then(response => {
-        alert('✅ Transaksi berhasil disimpan!');
-        document.getElementById('formTransaksi').reset();
-        loadData();
-      })
-      .catch(error => {
-        alert('❌ Gagal menyimpan data.');
-        console.error(error);
-      });
-    });
-
-    function loadData() {
-      fetch(scriptURL)
-        .then(res => res.json())
-        .then(data => {
-          const tbody = document.querySelector('#tabelTransaksi tbody');
-          tbody.innerHTML = '';
-          data.slice(1).forEach((row, i) => {
-            const tr = document.createElement('tr');
-            tr.innerHTML = `
-              <td>${i + 1}</td>
-              <td>${new Date(row[1]).toLocaleString()}</td>
-              <td>${row[2]}</td>
-              <td>${row[3]}</td>
-              <td>${row[4]}</td>
-              <td>${row[5]}</td>
-            `;
-            tbody.appendChild(tr);
-          });
-        });
+  <style>
+    body {
+      background: linear-gradient(to right, #0f2027, #203a43, #2c5364);
+      color: white;
+      min-height: 100vh;
+      padding-top: 50px;
     }
+    .card {
+      border-radius: 1rem;
+      box-shadow: 0 0 20px rgba(0,0,0,0.3);
+      transition: transform 0.2s;
+    }
+    .card:hover {
+      transform: scale(1.05);
+    }
+    a {
+      text-decoration: none;
+    }
+  </style>
+</head>
+<body>
 
-    loadData();
-  </script>
-</body>
-</html>
+<div class="container text-center">
+  <h1 class="mb-5">Dashboard Kasir Apotek</h1>
+  <div class="row g-4 justify-content-center">
+    <div class="col-md-4">
+      <a href="transaksi.html">
+        <div class="card bg-success text-white p-4">
+          <h3>Transaksi Penjualan</h3>
+          <p>Input transaksi & kurangi stok</p>
+        </div>
+      </a>
+    </div>
+    <div class="col-md-4">
+      <a href="stok.html">
+        <div class="card bg-info text-white p-4">
+          <h3>Stok Obat</h3>
+          <p>Kelola stok, harga, dan data obat</p>
+        </div>
+      </a>
+    </div>
+    <div class="col-md-4">
+      <a href="laporan.html">
+        <div class="card bg-warning text-dark p-4">
+          <h3>Lapor
