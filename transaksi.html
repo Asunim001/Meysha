@@ -7,7 +7,7 @@
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
   <style>
     body {
-      background: #f7f7f7;
+      background: #f8f9fa;
       padding: 30px;
     }
     .card {
@@ -45,7 +45,7 @@
 <body>
 
 <div class="card">
-  <h3 class="mb-4">Transaksi Penjualan</h3>
+  <h3 class="mb-4 text-center">Transaksi Penjualan</h3>
 
   <div class="mb-3">
     <label for="namaObat" class="form-label">Nama Obat</label>
@@ -61,7 +61,7 @@
 
   <div class="mb-3">
     <label for="jumlah" class="form-label">Jumlah</label>
-    <input type="number" id="jumlah" class="form-control" required min="1" value="1">
+    <input type="number" id="jumlah" class="form-control" min="1" value="1" required>
   </div>
 
   <div class="mb-3">
@@ -69,28 +69,27 @@
     <input type="number" id="total" class="form-control" readonly>
   </div>
 
-  <button class="btn btn-primary w-100" onclick="submitPenjualan()">Simpan Penjualan</button>
+  <button class="btn btn-primary w-100" onclick="submitPenjualan()">Simpan & Cetak</button>
   <a href="index.html" class="btn btn-secondary w-100 mt-3">← Kembali ke Dashboard</a>
 </div>
 
-<!-- 🔻 Nota (Struk) -->
+<!-- 🔻 Struk / Nota -->
 <div id="nota">
   <h5 style="text-align:center">🧾 Nota Kasir Apotek</h5>
   <div id="notaContent"></div>
   <button class="btn btn-dark w-100 mt-3" onclick="window.print()">🖨 Cetak Nota</button>
-
 </div>
 
 <script>
-const scriptURL = "https://script.google.com/macros/s/AKfycbwJO90T5t5a-B1EkW5Bu_kzlUNdn9LBI_CdCvi7i6AslZEQKKrZuEEL3SEeUt6kaiQ_/exec"; // Ganti dengan URL WebApp kamu
-
+const scriptURL = "https://script.google.com/macros/s/AKfycbxWveh0eo-a0bsRpa3BDmyTO5ZmYob54ddV-1MZ76gX2unyKEs7Jlk1eIvKTgQjWA4/exec"; // Ganti dengan WebApp URL kamu
 let obatData = [];
 
 async function loadObat() {
   try {
     const res = await fetch(`${scriptURL}?action=getStok`);
     const data = await res.json();
-    obatData = data.slice(1); // Skip header
+    obatData = data.slice(1); // Lewati header
+
     const select = document.getElementById("namaObat");
     obatData.forEach(row => {
       const opt = document.createElement("option");
@@ -122,18 +121,18 @@ function updateTotal() {
 }
 
 function tampilkanNota(nama, jumlah, harga, total) {
-  const notaHTML = `
+  const html = `
     Tanggal : ${new Date().toLocaleString()}<br>
     Nama Obat : ${nama}<br>
     Jumlah : ${jumlah}<br>
     Harga Satuan : Rp ${harga}<br>
-    Total : <strong>Rp ${total}</strong><br>
+    Total Bayar : <strong>Rp ${total}</strong><br>
     <hr>
     Terima kasih 🙏
   `;
-  document.getElementById("notaContent").innerHTML = notaHTML;
+  document.getElementById("notaContent").innerHTML = html;
   document.getElementById("nota").style.display = "block";
-  window.print();
+  // Untuk print manual, user klik tombol cetak
 }
 
 async function submitPenjualan() {
