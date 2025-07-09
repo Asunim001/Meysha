@@ -69,11 +69,11 @@
     <input type="number" id="total" class="form-control" readonly>
   </div>
 
-  <button class="btn btn-primary w-100" onclick="submitPenjualan()">Simpan & Cetak</button>
+  <button class="btn btn-primary w-100" onclick="submitPenjualan()">Simpan & Tampilkan Nota</button>
   <a href="index.html" class="btn btn-secondary w-100 mt-3">← Kembali ke Dashboard</a>
 </div>
 
-<!-- 🔻 Struk / Nota -->
+<!-- 🔻 Nota -->
 <div id="nota">
   <h5 style="text-align:center">🧾 Nota Kasir Apotek</h5>
   <div id="notaContent"></div>
@@ -81,7 +81,7 @@
 </div>
 
 <script>
-const scriptURL = "https://script.google.com/macros/s/AKfycbzn9CRNlmobRcCz1j4vsmhAjKRaculPNHzMT_1LkevrCL5JCjhcr1qMusWqg1g1_pWW/exec"; // Ganti dengan WebApp URL kamu
+const scriptURL = "https://script.google.com/macros/s/AKfycbzn9CRNlmobRcCz1j4vsmhAjKRaculPNHzMT_1LkevrCL5JCjhcr1qMusWqg1g1_pWW/exec"; // Ganti dengan URL Web App kamu
 let obatData = [];
 
 async function loadObat() {
@@ -91,7 +91,7 @@ async function loadObat() {
     obatData = data.slice(1); // Lewati header
 
     const select = document.getElementById("namaObat");
-    obatData.forEach(row => {
+    data.slice(1).forEach(row => {
       const opt = document.createElement("option");
       opt.value = row[1];
       opt.textContent = `${row[1]} - (${row[3]} stok)`;
@@ -132,43 +132,10 @@ function tampilkanNota(nama, jumlah, harga, total) {
   `;
   document.getElementById("notaContent").innerHTML = html;
   document.getElementById("nota").style.display = "block";
-  // Untuk print manual, user klik tombol cetak
 }
 
 async function submitPenjualan() {
   const nama = document.getElementById("namaObat").value;
   const jumlah = document.getElementById("jumlah").value;
   const harga = document.getElementById("harga").value;
-  const total = document.getElementById("total").value;
-
-  if (!nama || isNaN(jumlah) || isNaN(total) || total <= 0) {
-    alert("Mohon lengkapi data dengan benar.");
-    return;
-  }
-
-  const formData = new FormData();
-  formData.append("nama_obat", nama);
-  formData.append("jumlah", jumlah);
-  formData.append("total", total);
-
-  try {
-    const res = await fetch(scriptURL, {
-      method: "POST",
-      body: formData
-    });
-    const result = await res.text();
-    if (result === "success") {
-      tampilkanNota(nama, jumlah, harga, total);
-    } else {
-      alert("Gagal menyimpan: " + result);
-    }
-  } catch (err) {
-    alert("Terjadi error: " + err);
-  }
-}
-
-loadObat();
-</script>
-
-</body>
-</html>
+  const total = docum
