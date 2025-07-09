@@ -81,9 +81,7 @@
 </div>
 
 <script>
-const scriptURL = "https://script.google.com/macros/s/AKfycbzt5OCkgK2vdZFCrTspCHREfMpT55Rtp10maIj3nVbt_8bEZN1nicYgIJxrM6CbW5I/exec"; // Ganti dengan WebApp ID kamu
-let obatData = [];
-
+cconst scriptURL = "https://corsproxy.io/?https://script.google.com/macros/s/AKfycbzt50CkgK2vdZfCrTspCHREtMpI5SRtp1oEDvWy3drBaDJ3tyh84B6tpEQvoZm2kS/exec";
 async function loadObat() {
   try {
     const res = await fetch(`${scriptURL}?action=getStok`);
