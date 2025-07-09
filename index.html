@@ -10,15 +10,16 @@
       background: linear-gradient(to right, #0f2027, #203a43, #2c5364);
       color: white;
       min-height: 100vh;
-      padding-top: 50px;
+      padding-top: 40px;
     }
     .card {
       border-radius: 1rem;
       box-shadow: 0 0 20px rgba(0,0,0,0.3);
-      transition: transform 0.2s;
+      margin-bottom: 20px;
     }
     .card:hover {
-      transform: scale(1.05);
+      transform: scale(1.02);
+      transition: 0.2s;
     }
     a {
       text-decoration: none;
@@ -27,26 +28,113 @@
 </head>
 <body>
 
-<div class="container text-center">
-  <h1 class="mb-5">Dashboard Kasir Apotek</h1>
-  <div class="row g-4 justify-content-center">
+<div class="container">
+  <h2 class="text-center mb-5">Dashboard Kasir Apotek</h2>
+
+  <div class="row g-4 mb-5 justify-content-center">
     <div class="col-md-4">
       <a href="transaksi.html">
         <div class="card bg-success text-white p-4">
-          <h3>Transaksi Penjualan</h3>
-          <p>Input transaksi & kurangi stok</p>
+          <h4>Transaksi Penjualan</h4>
+          <p>Input transaksi dan kurangi stok</p>
         </div>
       </a>
     </div>
     <div class="col-md-4">
       <a href="stok.html">
         <div class="card bg-info text-white p-4">
-          <h3>Stok Obat</h3>
-          <p>Kelola stok, harga, dan data obat</p>
+          <h4>Stok Obat</h4>
+          <p>Kelola daftar obat dan stok</p>
         </div>
       </a>
     </div>
     <div class="col-md-4">
       <a href="laporan.html">
         <div class="card bg-warning text-dark p-4">
-          <h3>Lapor
+          <h4>Laporan Penjualan</h4>
+          <p>Lihat riwayat dan total penjualan</p>
+        </div>
+      </a>
+    </div>
+  </div>
+
+  <!-- 🔻 Notifikasi Stok Menipis -->
+  <div class="card bg-dark text-white p-4">
+    <h4 class="mb-3">⚠️ Obat dengan Stok Menipis</h4>
+    <ul id="stokMenipis" class="mb-0"></ul>
+  </div>
+
+  <!-- 🔻 Obat Terlaris -->
+  <div class="card bg-secondary text-white p-4 mt-4">
+    <h4 class="mb-3">🔥 Obat Terlaris</h4>
+    <ul id="obatTerlaris" class="mb-0"></ul>
+  </div>
+</div>
+
+<script>
+const scriptURL = "https://script.google.com/macros/s/AKfycbxPzwYcMeIsvNQL2TRPoTGPgLuKExTndKv6MW66L4rskBDEWM8eK0AJI-IM0Y24j70e/exec";
+
+async function getStokMenipis() {
+  try {
+    const res = await fetch(`${scriptURL}?action=getStok`);
+    const data = await res.json();
+    const list = document.getElementById("stokMenipis");
+    list.innerHTML = "";
+
+    let ada = false;
+    for (let i = 1; i < data.length; i++) {
+      const nama = data[i][1];
+      const stok = parseInt(data[i][3]);
+      if (stok < 10) {
+        ada = true;
+        const li = document.createElement("li");
+        li.textContent = `${nama} (sisa ${stok})`;
+        list.appendChild(li);
+      }
+    }
+    if (!ada) list.innerHTML = "<li>Semua stok aman ✅</li>";
+  } catch (err) {
+    console.error(err);
+  }
+}
+
+async function getObatTerlaris() {
+  try {
+    const res = await fetch(`${scriptURL}?action=getPenjualan`);
+    const data = await res.json();
+    const list = document.getElementById("obatTerlaris");
+    list.innerHTML = "";
+
+    const counter = {};
+    for (let i = 1; i < data.length; i++) {
+      const nama = data[i][1];
+      const jumlah = parseInt(data[i][2]);
+      if (!counter[nama]) counter[nama] = 0;
+      counter[nama] += jumlah;
+    }
+
+    const sorted = Object.entries(counter)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 5);
+
+    if (sorted.length === 0) {
+      list.innerHTML = "<li>Belum ada data penjualan</li>";
+      return;
+    }
+
+    sorted.forEach(([nama, jumlah]) => {
+      const li = document.createElement("li");
+      li.textContent = `${nama} (${jumlah} terjual)`;
+      list.appendChild(li);
+    });
+  } catch (err) {
+    console.error(err);
+  }
+}
+
+getStokMenipis();
+getObatTerlaris();
+</script>
+
+</body>
+</html>
