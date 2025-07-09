@@ -17,6 +17,29 @@
       padding: 2rem;
       box-shadow: 0 0 15px rgba(0,0,0,0.2);
     }
+    #nota {
+      display: none;
+      padding: 20px;
+      font-family: monospace;
+      background: #fff;
+      color: #000;
+      max-width: 300px;
+      margin: 30px auto;
+      border: 1px dashed #000;
+    }
+    @media print {
+      body * {
+        visibility: hidden;
+      }
+      #nota, #nota * {
+        visibility: visible;
+      }
+      #nota {
+        position: absolute;
+        left: 0;
+        top: 0;
+      }
+    }
   </style>
 </head>
 <body>
@@ -46,33 +69,44 @@
     <input type="number" id="total" class="form-control" readonly>
   </div>
 
-<button class="btn btn-primary w-100" onclick="submitPenjualan()">Simpan Penjualan</button>
-<a href="dashboard.html" class="btn btn-secondary w-100 mt-3">← Kembali ke Dashboard</a>
+  <button class="btn btn-primary w-100" onclick="submitPenjualan()">Simpan Penjualan</button>
+  <a href="dashboard.html" class="btn btn-secondary w-100 mt-3">← Kembali ke Dashboard</a>
+</div>
 
+<!-- 🔻 Nota (Struk) -->
+<div id="nota">
+  <h5 style="text-align:center">🧾 Nota Kasir Apotek</h5>
+  <div id="notaContent"></div>
+</div>
 
 <script>
-const scriptURL = "https://script.google.com/macros/s/AKfycbwJO90T5t5a-B1EkW5Bu_kzlUNdn9LBI_CdCvi7i6AslZEQKKrZuEEL3SEeUt6kaiQ_/exec";
+const scriptURL = "https://script.google.com/macros/s/AKfycbwJO90T5t5a-B1EkW5Bu_kzlUNdn9LBI_CdCvi7i6AslZEQKKrZuEEL3SEeUt6kaiQ_/exec"; // Ganti dengan URL WebApp kamu
 
 let obatData = [];
 
 async function loadObat() {
-  const res = await fetch(`${scriptURL}?action=getStok`);
-  const data = await res.json();
-  obatData = data.slice(1); // skip header
-  const select = document.getElementById("namaObat");
-  obatData.forEach(row => {
-    const opt = document.createElement("option");
-    opt.value = row[1];
-    opt.textContent = `${row[1]} - (${row[3]} stok)`;
-    select.appendChild(opt);
-  });
+  try {
+    const res = await fetch(`${scriptURL}?action=getStok`);
+    const data = await res.json();
+    obatData = data.slice(1); // Skip header
+    const select = document.getElementById("namaObat");
+    obatData.forEach(row => {
+      const opt = document.createElement("option");
+      opt.value = row[1];
+      opt.textContent = `${row[1]} - (${row[3]} stok)`;
+      select.appendChild(opt);
+    });
+  } catch (err) {
+    alert("Gagal memuat data obat.");
+    console.error(err);
+  }
 }
 
 document.getElementById("namaObat").addEventListener("change", function() {
   const selected = this.value;
   const obat = obatData.find(o => o[1] === selected);
   if (obat) {
-    document.getElementById("harga").value = obat[4];
+    document.getElementById("harga").value = obat[4] || 0;
     updateTotal();
   }
 });
@@ -85,13 +119,29 @@ function updateTotal() {
   document.getElementById("total").value = harga * jumlah;
 }
 
+function tampilkanNota(nama, jumlah, harga, total) {
+  const notaHTML = `
+    Tanggal : ${new Date().toLocaleString()}<br>
+    Nama Obat : ${nama}<br>
+    Jumlah : ${jumlah}<br>
+    Harga Satuan : Rp ${harga}<br>
+    Total : <strong>Rp ${total}</strong><br>
+    <hr>
+    Terima kasih 🙏
+  `;
+  document.getElementById("notaContent").innerHTML = notaHTML;
+  document.getElementById("nota").style.display = "block";
+  window.print();
+}
+
 async function submitPenjualan() {
   const nama = document.getElementById("namaObat").value;
   const jumlah = document.getElementById("jumlah").value;
+  const harga = document.getElementById("harga").value;
   const total = document.getElementById("total").value;
 
-  if (!nama || !jumlah || !total) {
-    alert("Mohon lengkapi semua data.");
+  if (!nama || isNaN(jumlah) || isNaN(total) || total <= 0) {
+    alert("Mohon lengkapi data dengan benar.");
     return;
   }
 
@@ -107,8 +157,7 @@ async function submitPenjualan() {
     });
     const result = await res.text();
     if (result === "success") {
-      alert("Transaksi berhasil disimpan!");
-      location.reload();
+      tampilkanNota(nama, jumlah, harga, total);
     } else {
       alert("Gagal menyimpan: " + result);
     }
