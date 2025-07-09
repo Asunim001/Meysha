@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Transaksi Penjualan</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    body {
+      background: #f7f7f7;
+      padding: 30px;
+    }
+    .card {
+      max-width: 600px;
+      margin: auto;
+      border-radius: 1rem;
+      padding: 2rem;
+      box-shadow: 0 0 15px rgba(0,0,0,0.2);
+    }
+  </style>
+</head>
+<body>
+
+<div class="card">
+  <h3 class="mb-4">Transaksi Penjualan</h3>
+
+  <div class="mb-3">
+    <label for="namaObat" class="form-label">Nama Obat</label>
+    <select id="namaObat" class="form-select" required>
+      <option value="">-- Pilih Obat --</option>
+    </select>
+  </div>
+
+  <div class="mb-3">
+    <label for="harga" class="form-label">Harga (Rp)</label>
+    <input type="number" id="harga" class="form-control" readonly>
+  </div>
+
+  <div class="mb-3">
+    <label for="jumlah" class="form-label">Jumlah</label>
+    <input type="number" id="jumlah" class="form-control" required min="1" value="1">
+  </div>
+
+  <div class="mb-3">
+    <label for="total" class="form-label">Total (Rp)</label>
+    <input type="number" id="total" class="form-control" readonly>
+  </div>
+
+  <button class="btn btn-primary w-100" onclick="submitPenjualan()">Simpan Penjualan</button>
+</div>
+
+<script>
+const scriptURL = "https://script.google.com/macros/s/AKfycbwJO90T5t5a-B1EkW5Bu_kzlUNdn9LBI_CdCvi7i6AslZEQKKrZuEEL3SEeUt6kaiQ_/exec";
+
+let obatData = [];
+
+async function loadObat() {
+  const res = await fetch(`${scriptURL}?action=getStok`);
+  const data = await res.json();
+  obatData = data.slice(1); // skip header
+  const select = document.getElementById("namaObat");
+  obatData.forEach(row => {
+    const opt = document.createElement("option");
+    opt.value = row[1];
+    opt.textContent = `${row[1]} - (${row[3]} stok)`;
+    select.appendChild(opt);
+  });
+}
+
+document.getElementById("namaObat").addEventListener("change", function() {
+  const selected = this.value;
+  const obat = obatData.find(o => o[1] === selected);
+  if (obat) {
+    document.getElementById("harga").value = obat[4];
+    updateTotal();
+  }
+});
+
+document.getElementById("jumlah").addEventListener("input", updateTotal);
+
+function updateTotal() {
+  const harga = parseInt(document.getElementById("harga").value || 0);
+  const jumlah = parseInt(document.getElementById("jumlah").value || 0);
+  document.getElementById("total").value = harga * jumlah;
+}
+
+async function submitPenjualan() {
+  const nama = document.getElementById("namaObat").value;
+  const jumlah = document.getElementById("jumlah").value;
+  const total = document.getElementById("total").value;
+
+  if (!nama || !jumlah || !total) {
+    alert("Mohon lengkapi semua data.");
+    return;
+  }
+
+  const formData = new FormData();
+  formData.append("nama_obat", nama);
+  formData.append("jumlah", jumlah);
+  formData.append("total", total);
+
+  try {
+    const res = await fetch(scriptURL, {
+      method: "POST",
+      body: formData
+    });
+    const result = await res.text();
+    if (result === "success") {
+      alert("Transaksi berhasil disimpan!");
+      location.reload();
+    } else {
+      alert("Gagal menyimpan: " + result);
+    }
+  } catch (err) {
+    alert("Terjadi error: " + err);
+  }
+}
+
+loadObat();
+</script>
+
+</body>
+</html>
