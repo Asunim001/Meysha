@@ -4,14 +4,14 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Laporan Penjualan</title>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
   <style>
     body {
       background: #f7f7f7;
       padding: 30px;
     }
     .card {
-      max-width: 1000px;
+      max-width: 1100px;
       margin: auto;
       border-radius: 1rem;
       padding: 2rem;
@@ -24,7 +24,7 @@
     }
     @media print {
       .no-print {
-        display: none;
+        display: none !important;
       }
     }
   </style>
@@ -34,8 +34,24 @@
 <div class="card">
   <h3 class="mb-4 text-center">📋 Laporan Penjualan</h3>
 
+  <div class="row g-3 mb-4 no-print">
+    <div class="col-md-4">
+      <label for="filterTanggal" class="form-label">Filter Tanggal (YYYY-MM-DD)</label>
+      <input type="date" id="filterTanggal" class="form-control">
+    </div>
+    <div class="col-md-4">
+      <label for="filterBulan" class="form-label">Filter Bulan</label>
+      <select id="filterBulan" class="form-select">
+        <option value="">Semua Bulan</option>
+      </select>
+    </div>
+    <div class="col-md-4 d-flex align-items-end">
+      <button class="btn btn-primary w-100" onclick="filterLaporan()">🔍 Tampilkan</button>
+    </div>
+  </div>
+
   <div class="table-responsive">
-    <table class="table table-bordered table-striped align-middle text-center">
+    <table class="table table-bordered table-striped text-center align-middle">
       <thead class="table-dark">
         <tr>
           <th>Tanggal</th>
@@ -51,41 +67,85 @@
   <div class="d-flex justify-content-between align-items-center mt-3">
     <a href="index.html" class="btn btn-secondary no-print">← Kembali</a>
     <div class="total">Total Penjualan: Rp <span id="totalPenjualan">0</span></div>
-    <button class="btn btn-success no-print" onclick="window.print()">🖨 Cetak Laporan</button>
+    <button class="btn btn-success no-print" onclick="window.print()">🖨 Cetak</button>
   </div>
 </div>
 
 <script>
-const scriptURL = "https://script.google.com/macros/s/AKfycbzjOpnBZb_wGEOMrahiOdzxgXXWCuFanw0B7Gryq3cnwGNYNc742qiO93R0xsDSUraM/exec"; // Ganti dengan Web App URL kamu
+const scriptURL = "https://script.google.com/macros/s/AKfycbzjOpnBZb_wGEOMrahiOdzxgXXWCuFanw0B7Gryq3cnwGNYNc742qiO93R0xsDSUraM/exec"; // Ganti dengan URL Web App kamu
+let allData = [];
 
 async function loadLaporan() {
   try {
     const res = await fetch(`${scriptURL}?action=getPenjualan`);
     const data = await res.json();
-    const tbody = document.getElementById("tabelLaporan");
-    const totalText = document.getElementById("totalPenjualan");
-    tbody.innerHTML = "";
+    allData = data.slice(1); // skip header
 
-    let totalSemua = 0;
+    // Isi dropdown bulan unik
+    const bulanSet = new Set();
+    allData.forEach(row => {
+      const tgl = new Date(row[0]);
+      const bulan = tgl.toLocaleString("default", { month: "long", year: "numeric" });
+      bulanSet.add(bulan);
+    });
 
-    for (let i = 1; i < data.length; i++) {
-      const [tanggal, nama, jumlah, total] = data[i];
-      const tr = document.createElement("tr");
-      tr.innerHTML = `
-        <td>${new Date(tanggal).toLocaleString()}</td>
-        <td>${nama}</td>
-        <td>${jumlah}</td>
-        <td>Rp ${parseInt(total).toLocaleString("id-ID")}</td>
-      `;
-      tbody.appendChild(tr);
-      totalSemua += parseInt(total);
-    }
+    const filterBulan = document.getElementById("filterBulan");
+    filterBulan.innerHTML = `<option value="">Semua Bulan</option>`;
+    Array.from(bulanSet).forEach(b => {
+      const opt = document.createElement("option");
+      opt.value = b;
+      opt.textContent = b;
+      filterBulan.appendChild(opt);
+    });
 
-    totalText.textContent = totalSemua.toLocaleString("id-ID");
+    tampilkanLaporan(allData);
   } catch (err) {
-    alert("Gagal memuat data laporan.");
+    alert("Gagal memuat data.");
     console.error(err);
   }
+}
+
+function tampilkanLaporan(data) {
+  const tbody = document.getElementById("tabelLaporan");
+  const totalEl = document.getElementById("totalPenjualan");
+  tbody.innerHTML = "";
+  let total = 0;
+
+  data.forEach(row => {
+    const tgl = new Date(row[0]);
+    const nama = row[1];
+    const jumlah = row[2];
+    const totalRow = parseInt(row[3]);
+    total += totalRow;
+
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td>${tgl.toLocaleString()}</td>
+      <td>${nama}</td>
+      <td>${jumlah}</td>
+      <td>Rp ${totalRow.toLocaleString("id-ID")}</td>
+    `;
+    tbody.appendChild(tr);
+  });
+
+  totalEl.textContent = total.toLocaleString("id-ID");
+}
+
+function filterLaporan() {
+  const tanggalInput = document.getElementById("filterTanggal").value;
+  const bulanInput = document.getElementById("filterBulan").value;
+
+  const filtered = allData.filter(row => {
+    const tgl = new Date(row[0]);
+    const tglStr = tgl.toISOString().split("T")[0];
+    const bulanStr = tgl.toLocaleString("default", { month: "long", year: "numeric" });
+
+    if (tanggalInput && tglStr !== tanggalInput) return false;
+    if (bulanInput && bulanStr !== bulanInput) return false;
+    return true;
+  });
+
+  tampilkanLaporan(filtered);
 }
 
 loadLaporan();
