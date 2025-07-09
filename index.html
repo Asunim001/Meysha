@@ -2,8 +2,8 @@
 <html lang="id">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Dashboard Kasir Apotek</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Dashboard</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
   <style>
     body {
@@ -29,8 +29,9 @@
 <body>
 
 <div class="container">
-  <h2 class="text-center mb-5">Dashboard Kasir Apotek</h2>
+  <h2 class="text-center mb-5">💊 Dashboard Kasir Apotek</h2>
 
+  <!-- Navigasi -->
   <div class="row g-4 mb-5 justify-content-center">
     <div class="col-md-4">
       <a href="transaksi.html">
@@ -44,7 +45,7 @@
       <a href="stok.html">
         <div class="card bg-info text-white p-4">
           <h4>Stok Obat</h4>
-          <p>Kelola daftar obat dan stok</p>
+          <p>Lihat semua stok obat</p>
         </div>
       </a>
     </div>
@@ -56,9 +57,17 @@
         </div>
       </a>
     </div>
+    <div class="col-md-4">
+      <a href="pembelian.html">
+        <div class="card bg-primary text-white p-4">
+          <h4>Tambah Pembelian</h4>
+          <p>Input obat baru ke stok</p>
+        </div>
+      </a>
+    </div>
   </div>
 
-  <!-- 🔻 Notifikasi Stok Menipis -->
+  <!-- 🔻 Obat Stok Menipis -->
   <div class="card bg-dark text-white p-4">
     <h4 class="mb-3">⚠️ Obat dengan Stok Menipis</h4>
     <ul id="stokMenipis" class="mb-0"></ul>
@@ -72,68 +81,68 @@
 </div>
 
 <script>
-const scriptURL = "https://script.google.com/macros/s/AKfycbwJO90T5t5a-B1EkW5Bu_kzlUNdn9LBI_CdCvi7i6AslZEQKKrZuEEL3SEeUt6kaiQ_/exec";
+  const scriptURL = "https://script.google.com/macros/s/AKfycbxWveh0eo-a0bsRpa3BDmyTO5ZmYob54ddV-1MZ76gX2unyKEs7Jlk1eIvKTgQjWA4/exec"; // Ganti dengan URL Web App kamu
 
-async function getStokMenipis() {
-  try {
-    const res = await fetch(`${scriptURL}?action=getStok`);
-    const data = await res.json();
-    const list = document.getElementById("stokMenipis");
-    list.innerHTML = "";
+  async function getStokMenipis() {
+    try {
+      const res = await fetch(`${scriptURL}?action=getStok`);
+      const data = await res.json();
+      const list = document.getElementById("stokMenipis");
+      list.innerHTML = "";
 
-    let ada = false;
-    for (let i = 1; i < data.length; i++) {
-      const nama = data[i][1];
-      const stok = parseInt(data[i][3]);
-      if (stok < 10) {
-        ada = true;
-        const li = document.createElement("li");
-        li.textContent = `${nama} (sisa ${stok})`;
-        list.appendChild(li);
+      let ada = false;
+      for (let i = 1; i < data.length; i++) {
+        const nama = data[i][1];
+        const stok = parseInt(data[i][3]);
+        if (stok < 10) {
+          ada = true;
+          const li = document.createElement("li");
+          li.textContent = `${nama} (sisa ${stok})`;
+          list.appendChild(li);
+        }
       }
+      if (!ada) list.innerHTML = "<li>Semua stok aman ✅</li>";
+    } catch (err) {
+      console.error(err);
     }
-    if (!ada) list.innerHTML = "<li>Semua stok aman ✅</li>";
-  } catch (err) {
-    console.error(err);
   }
-}
 
-async function getObatTerlaris() {
-  try {
-    const res = await fetch(`${scriptURL}?action=getPenjualan`);
-    const data = await res.json();
-    const list = document.getElementById("obatTerlaris");
-    list.innerHTML = "";
+  async function getObatTerlaris() {
+    try {
+      const res = await fetch(`${scriptURL}?action=getPenjualan`);
+      const data = await res.json();
+      const list = document.getElementById("obatTerlaris");
+      list.innerHTML = "";
 
-    const counter = {};
-    for (let i = 1; i < data.length; i++) {
-      const nama = data[i][1];
-      const jumlah = parseInt(data[i][2]);
-      if (!counter[nama]) counter[nama] = 0;
-      counter[nama] += jumlah;
+      const counter = {};
+      for (let i = 1; i < data.length; i++) {
+        const nama = data[i][1];
+        const jumlah = parseInt(data[i][2]);
+        if (!counter[nama]) counter[nama] = 0;
+        counter[nama] += jumlah;
+      }
+
+      const sorted = Object.entries(counter)
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 5);
+
+      if (sorted.length === 0) {
+        list.innerHTML = "<li>Belum ada data penjualan</li>";
+        return;
+      }
+
+      sorted.forEach(([nama, jumlah]) => {
+        const li = document.createElement("li");
+        li.textContent = `${nama} (${jumlah} terjual)`;
+        list.appendChild(li);
+      });
+    } catch (err) {
+      console.error(err);
     }
-
-    const sorted = Object.entries(counter)
-      .sort((a, b) => b[1] - a[1])
-      .slice(0, 5);
-
-    if (sorted.length === 0) {
-      list.innerHTML = "<li>Belum ada data penjualan</li>";
-      return;
-    }
-
-    sorted.forEach(([nama, jumlah]) => {
-      const li = document.createElement("li");
-      li.textContent = `${nama} (${jumlah} terjual)`;
-      list.appendChild(li);
-    });
-  } catch (err) {
-    console.error(err);
   }
-}
 
-getStokMenipis();
-getObatTerlaris();
+  getStokMenipis();
+  getObatTerlaris();
 </script>
 
 </body>
