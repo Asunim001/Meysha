@@ -1,17 +1,19 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Stok Obat Apotek</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Data Stok Obat</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
   <style>
     body {
-      background: #f8f9fa;
+      background: #f0f0f0;
       padding: 30px;
     }
     .table-container {
-      background: #fff;
+      max-width: 1000px;
+      margin: auto;
+      background: white;
       padding: 20px;
       border-radius: 1rem;
       box-shadow: 0 0 10px rgba(0,0,0,0.1);
@@ -20,55 +22,54 @@
 </head>
 <body>
 
-<div class="container">
-  <h3 class="mb-4 text-center">📦 Daftar Stok Obat</h3>
-
-  <div class="table-container">
-    <div class="table-responsive">
-      <table class="table table-bordered table-striped">
-        <thead class="table-dark">
-          <tr>
-            <th>No</th>
-            <th>Nama Obat</th>
-            <th>Exp</th>
-            <th>Stok</th>
-            <th>Harga Jual</th>
-          </tr>
-        </thead>
-        <tbody id="dataStok"></tbody>
-      </table>
-    </div>
+<div class="table-container">
+  <h3 class="mb-4 text-center">📦 Stok Obat Apotek</h3>
+  <div class="table-responsive">
+    <table class="table table-bordered table-striped align-middle text-center">
+      <thead class="table-dark">
+        <tr>
+          <th>ID</th>
+          <th>Nama Obat</th>
+          <th>Exp</th>
+          <th>Stok</th>
+          <th>Harga Jual</th>
+          <th>Harga Modal</th>
+          <th>PBF</th>
+        </tr>
+      </thead>
+      <tbody id="stokBody"></tbody>
+    </table>
   </div>
-
-  <a href="index.html" class="btn btn-secondary mt-4">← Kembali ke Dashboard</a>
+  <a href="index.html" class="btn btn-secondary w-100 mt-3">← Kembali ke Dashboard</a>
 </div>
 
 <script>
-const scriptURL = "https://script.google.com/macros/s/AKfycbxWveh0eo-a0bsRpa3BDmyTO5ZmYob54ddV-1MZ76gX2unyKEs7Jlk1eIvKTgQjWA4/exec"; // Ganti dengan WebApp URL kamu
+const scriptURL = "https://script.google.com/macros/s/AKfycbxWveh0eo-a0bsRpa3BDmyTO5ZmYob54ddV-1MZ76gX2unyKEs7Jlk1eIvKTgQjWA4/exec"; // Ganti dengan URL WebApp kamu
 
 async function loadStok() {
   try {
     const res = await fetch(`${scriptURL}?action=getStok`);
     const data = await res.json();
-    const tbody = document.getElementById("dataStok");
+    const tbody = document.getElementById("stokBody");
     tbody.innerHTML = "";
 
     for (let i = 1; i < data.length; i++) {
-      const [id, nama, exp, stok, hargaJual] = data[i];
-      const row = `
-        <tr>
-          <td>${i}</td>
-          <td>${nama}</td>
-          <td>${exp}</td>
-          <td>${stok}</td>
-          <td>Rp ${hargaJual}</td>
-        </tr>
+      const [id, nama, exp, stok, hargaJual, hargaModal, pbf] = data[i];
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td>${id}</td>
+        <td>${nama}</td>
+        <td>${exp}</td>
+        <td>${stok}</td>
+        <td>Rp ${hargaJual}</td>
+        <td>Rp ${hargaModal}</td>
+        <td>${pbf}</td>
       `;
-      tbody.innerHTML += row;
+      tbody.appendChild(tr);
     }
   } catch (err) {
-    alert("Gagal memuat data stok.");
-    console.error(err);
+    console.error("Gagal memuat data:", err);
+    alert("Gagal memuat data stok dari server.");
   }
 }
 
